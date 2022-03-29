@@ -1,5 +1,6 @@
 <?php
 
+// Car crud testing
 namespace Tests\Feature;
 
 use App\Car;
@@ -9,9 +10,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CarsTest extends TestCase
 {
-    use WithFaker, RefreshDatabase;
-        
-    private $carNames, $attributes;
+    use WithFaker;
+    use RefreshDatabase;
+
+    private $carNames;
+    private $attributes;
 
     protected function setUp()
     {
@@ -24,7 +27,7 @@ class CarsTest extends TestCase
     }
 
     /** @test */
-    public function a_user_can_create_a_car()
+    public function aUserCanCreateACar()
     {
         $this->post('/cars', $this->attributes)->assertSee($this->attributes['description']);
 
@@ -34,7 +37,7 @@ class CarsTest extends TestCase
     }
 
     /** @test */
-    public function a_title_is_required_for_a_car()
+    public function aTitleIsRequiredForACar()
     {
         $response = $this->post('/cars', [
             'title' => '',
@@ -45,7 +48,7 @@ class CarsTest extends TestCase
     }
 
     /** @test */
-    public function a_description_is_required_for_a_car()
+    public function aDescriptionIsRequiredForACar()
     {
         $response = $this->post('/cars', [
             'title' => $this->faker->randomElement($this->carNames),
@@ -56,20 +59,79 @@ class CarsTest extends TestCase
     }
 
     /** @test */
-    public function a_car_can_be_updated()
+    public function aCarCanBeUpdated()
     {
-        $this->withoutExceptionHandling();
-
         $this->post('/cars', $this->attributes)->assertSee($this->attributes['description']);
 
         $car = Car::first();
 
-        $response = $this->patch('/cars/'.$car->id, [
+        $response = $this->patch('/cars/' . $car->id, [
             'title' => 'Kia',
             'description' => 'Some updated description'
         ]);
 
         $this->assertEquals('Kia', Car::first()->title);
         $this->assertEquals('Some updated description', Car::first()->description);
+
+        $response->assertSee('Kia');
+        $response->assertSee('Some updated description');
+    }
+
+    /** @test */
+    public function aCarCanBeDeleted()
+    {
+        $this->withoutExceptionHandling();
+        $this->post('/cars', $this->attributes);
+
+        $car = Car::first();
+
+        $this->assertCount(1, Car::all());
+
+        $response = $this->delete('/cars/' . $car->id);
+
+        $this->assertCount(0, Car::all());
+
+        $response->assertSee('success');
+    }
+
+    /** @test */
+    public function aCarListCanBePaginated()
+    {
+        $this->withoutExceptionHandling();
+        $attr = null;
+        for ($i = 0; $i < 100; $i++) {
+            $this->attributes = [
+                'title' => $this->faker->randomElement($this->carNames),
+                'description' => $this->faker->sentence()
+            ];
+            if ($i === 0) {
+                $attr = $this->attributes;
+            }
+            $this->post('/cars', $this->attributes);
+        }
+
+        $this->get('/cars?limit=50')
+            ->assertSee('"per_page":"50')
+            ->assertSee($attr['description']);
+    }
+
+    /** @test */
+    public function aCarListCanBeFiltered()
+    {
+        $this->withoutExceptionHandling();
+        $attr = null;
+        for ($i = 0; $i < 100; $i++) {
+            $this->attributes = [
+                'title' => $this->faker->randomElement($this->carNames),
+                'description' => $this->faker->sentence()
+            ];
+            if ($i === 99) {
+                $attr = $this->attributes;
+            }
+            $this->post('/cars', $this->attributes);
+        }
+
+        $this->get('/cars?title=' . $attr['title'])
+            ->assertSee($attr['description']);
     }
 }

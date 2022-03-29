@@ -7,16 +7,18 @@ use Illuminate\Http\Request;
 
 class CarsController extends Controller
 {
-    public function index() {
-        return Car::all();
-    }
-
-    protected function validateRequest(Request $request)
+    public function index(Request $request)
     {
-        return $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-        ]);
+        $perPage = 2;
+        if ($request->has('limit') && is_numeric($request->input('limit'))) {
+            $perPage = $request->input('limit');
+        }
+        if ($request->has('title') && $request->input('title') !== 0) {
+            $query = Car::where('title', $request->input('title'));
+        } else {
+            $query = Car::whereNotNull('title');
+        }
+        return $query->paginate($perPage);
     }
 
     public function store(Request $request)
@@ -27,11 +29,22 @@ class CarsController extends Controller
     public function update(Request $request, Car $car)
     {
         $car->update($this->validateRequest($request));
+
         return $car;
     }
 
-    // public function delete()
-    // {
+    public function delete(Car $car)
+    {
+        $car->delete();
 
-    // }
+        return 'success';
+    }
+
+    protected function validateRequest(Request $request)
+    {
+        return $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+        ]);
+    }
 }
