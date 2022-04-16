@@ -29,17 +29,17 @@ class CarsTest extends TestCase
     /** @test */
     public function aUserCanCreateACar()
     {
-        $this->post('/cars', $this->attributes)->assertSee($this->attributes['description']);
+        $this->post('/api/cars', $this->attributes)->assertSee($this->attributes['description']);
 
         $this->assertDatabaseHas('cars', $this->attributes);
 
-        $this->get('/cars')->assertSee($this->attributes['title']);
+        $this->get('/api/cars')->assertSee($this->attributes['title']);
     }
 
     /** @test */
     public function aTitleIsRequiredForACar()
     {
-        $response = $this->post('/cars', [
+        $response = $this->post('/api/cars', [
             'title' => '',
             'description' => $this->faker->sentence()
         ]);
@@ -50,7 +50,7 @@ class CarsTest extends TestCase
     /** @test */
     public function aDescriptionIsRequiredForACar()
     {
-        $response = $this->post('/cars', [
+        $response = $this->post('/api/cars', [
             'title' => $this->faker->randomElement($this->carNames),
             'description' => ''
         ]);
@@ -61,11 +61,11 @@ class CarsTest extends TestCase
     /** @test */
     public function aCarCanBeUpdated()
     {
-        $this->post('/cars', $this->attributes)->assertSee($this->attributes['description']);
+        $this->post('/api/cars', $this->attributes)->assertSee($this->attributes['description']);
 
         $car = Car::first();
 
-        $response = $this->patch('/cars/' . $car->id, [
+        $response = $this->patch('/api/cars/' . $car->id, [
             'title' => 'Kia',
             'description' => 'Some updated description'
         ]);
@@ -81,13 +81,13 @@ class CarsTest extends TestCase
     public function aCarCanBeDeleted()
     {
         $this->withoutExceptionHandling();
-        $this->post('/cars', $this->attributes);
+        $this->post('/api/cars', $this->attributes);
 
         $car = Car::first();
 
         $this->assertCount(1, Car::all());
 
-        $response = $this->delete('/cars/' . $car->id);
+        $response = $this->delete('/api/cars/' . $car->id);
 
         $this->assertCount(0, Car::all());
 
@@ -107,10 +107,10 @@ class CarsTest extends TestCase
             if ($i === 0) {
                 $attr = $this->attributes;
             }
-            $this->post('/cars', $this->attributes);
+            $this->withoutMiddleware()->post('/api/cars', $this->attributes);
         }
 
-        $this->get('/cars?limit=50')
+        $this->withoutMiddleware()->get('/api/cars?limit=50')
             ->assertSee('"per_page":"50')
             ->assertSee($attr['description']);
     }
@@ -128,10 +128,13 @@ class CarsTest extends TestCase
             if ($i === 99) {
                 $attr = $this->attributes;
             }
-            $this->post('/cars', $this->attributes);
+            $this->withoutMiddleware()->post('/api/cars', $this->attributes);
         }
 
-        $this->get('/cars?title=' . $attr['title'])
+        $this->withoutMiddleware()->get('/api/cars?search=' . $attr['title'])
+            ->assertSee($attr['title']);
+
+        $this->withoutMiddleware()->get('/api/cars?search=' . $attr['description'])
             ->assertSee($attr['description']);
     }
 }

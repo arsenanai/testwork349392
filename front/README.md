@@ -1,24 +1,17 @@
-# front
+# CRUD APP using Laravel + Vue with TDD - Frontend
 
-## Project setup
-```
-npm install
-```
+## Steps to install
 
-### Compiles and hot-reloads for development
+set environment variables for backend server address like in .env.example. Then run these commands:
+```sh
+cd front
+npm i
 ```
+To run tests...
+```sh
+npm run test:unit
+```
+To start local server
+```sh
 npm run serve
 ```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

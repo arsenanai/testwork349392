@@ -16,3 +16,13 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware(['cors'])->group(function () {
+    Route::get('/cars', 'CarsController@index');
+
+    Route::post('/cars', 'CarsController@store');
+
+    Route::patch('/cars/{car}', 'CarsController@update');
+
+    Route::delete('/cars/{car}', 'CarsController@delete');
+});

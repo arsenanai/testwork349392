@@ -14,11 +14,3 @@
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/cars', 'CarsController@index');
-
-Route::post('/cars', 'CarsController@store');
-
-Route::patch('/cars/{car}', 'CarsController@update');
-
-Route::delete('/cars/{car}', 'CarsController@delete');

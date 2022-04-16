@@ -13,10 +13,10 @@ class CarsController extends Controller
         if ($request->has('limit') && is_numeric($request->input('limit'))) {
             $perPage = $request->input('limit');
         }
-        if ($request->has('title') && $request->input('title') !== 0) {
-            $query = Car::where('title', $request->input('title'));
-        } else {
-            $query = Car::whereNotNull('title');
+        $query = Car::whereNotNull('title');
+        if ($request->has('search') && $request->input('search') !== 0) {
+            $query = Car::where('title', 'like', "%{$request->input('search')}%")
+                ->orWhere('description', 'like', "%{$request->input('search')}%");
         }
         return $query->paginate($perPage);
     }
@@ -35,9 +35,12 @@ class CarsController extends Controller
 
     public function delete(Car $car)
     {
-        $car->delete();
-
-        return 'success';
+        try {
+            $car->delete();
+            return 'success';
+        } catch (\Exception $e) {
+            return 'exception: '.$e->getMessage();
+        }
     }
 
     protected function validateRequest(Request $request)

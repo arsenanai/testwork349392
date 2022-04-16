@@ -8,4 +8,6 @@ class Car extends Model
 {
     //
     protected $guarded = [];
+
+    protected $fillable = ['title', 'description'];
 }
